@@ -31,7 +31,7 @@ contract Shuffler is VRFConsumerBaseV2Plus {
         uint256 raceId;
     }
 
-    constructor(address _vrfCoordinator, uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    constructor(address _vrfCoordinator, uint256 subscriptionId) VRFConsumerBaseV2Plus(_vrfCoordinator) {
         vrfCoordinator = _vrfCoordinator;
         s_subscriptionId = subscriptionId;
     }
