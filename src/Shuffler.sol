@@ -11,7 +11,9 @@ contract Shuffler is VRFConsumerBaseV2Plus {
     // ---------- Variables ----------
 
     uint256 s_subscriptionId;
-    address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
+    // Sepolia VRF Coordinator
+    // address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
+    address vrfCoordinator;
     bytes32 s_keyHash =
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
     uint32 callbackGasLimit = 40000;
@@ -29,7 +31,8 @@ contract Shuffler is VRFConsumerBaseV2Plus {
         uint256 raceId;
     }
 
-    constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    constructor(address _vrfCoordinator, uint256 subscriptionId) VRFConsumerBaseV2Plus(vrfCoordinator) {
+        vrfCoordinator = _vrfCoordinator;
         s_subscriptionId = subscriptionId;
     }
 
