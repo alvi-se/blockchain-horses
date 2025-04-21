@@ -62,14 +62,15 @@ contract HorseRace {
 
     // ---------- Constructor ----------
 
-    constructor() {
+    constructor(address shufflerAddress) {
         owner = msg.sender;
+        shuffler = Shuffler(shufflerAddress);
     }
 
     // ---------- Functions ----------
 
     function bet(uint256 raceId, uint256 horseId) external payable {
-        require(msg.value > 0, "Negative amount was sent");
+        require(msg.value > 1000 && msg.value < 1_000_000, "Only bets between 1000 and 1000000 wei are allowed");
         require(raceId < races.length, "No such race exists");
         Race storage race = races[raceId];
 
@@ -132,11 +133,13 @@ contract HorseRace {
         Bet[] storage winningBets = race.bets[min];
 
         for (uint256 i = 0; i < winningBets.length; i++) {
-            Bet storage bet = winningBets[i];
-            uint256 amount = bet.amount;
+            Bet storage b = winningBets[i];
+            uint256 amount = b.amount;
+            // 1 / winningBets.length probability of winning
+            amount = amount * race.horses.length;
             // TODO check if the computation is correct, Copilot wrote it
             uint256 winningsAmount = (amount * (1000 - HOUSE_EDGE)) / 1000;
-            winnings[bet.owner] += winningsAmount;
+            winnings[b.owner] += winningsAmount;
         }
     }
 

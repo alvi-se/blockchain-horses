@@ -2,6 +2,7 @@
 src = "src"
 out = "out"
 libs = ["lib", "dependencies"]
+gas_reports = ["HorseRace", "Shuffler"]
 
 [dependencies]
 forge-std = "1.9.6"
