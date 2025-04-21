@@ -1,0 +1,3 @@
+forge-std-1.9.6/=dependencies/forge-std-1.9.6/src/
+forge-std/=lib/forge-std/src/
+@chainlink/=dependencies/chainlink-brownie-contracts/
