@@ -27,6 +27,8 @@ contract HorseRaceScript is Script {
         vrfMock.fundSubscription(vrfSubscription, 100000000000000000000); // 100 LINK
 
         shuffler = new Shuffler(address(vrfMock), vrfSubscription);
+        vrfMock.addConsumer(vrfSubscription, address(shuffler));
+
         horseRace = new HorseRace(address(shuffler));
         shuffler.setHorseRace(address(horseRace));
 
