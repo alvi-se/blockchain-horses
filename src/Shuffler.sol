@@ -5,6 +5,7 @@ pragma solidity >=0.8.2 <0.9.0;
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {HorseRace} from "./HorseRace.sol";
+import {console} from "forge-std/console.sol";
 
 contract Shuffler is VRFConsumerBaseV2Plus {
 
@@ -77,12 +78,15 @@ contract Shuffler is VRFConsumerBaseV2Plus {
         );
 
         emit StartShuffling(requestId, raceId);
+        console.log("Shuffling raceId %d with requestId %d", raceId, requestId);
+
         return requestId;
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
         uint256 raceId = requestsToRaces[requestId];
         emit Shuffled(requestId, raceId);
+        console.log("Shuffled raceId %d with requestId %d", raceId, requestId);
         horseRace.onRaceFinish(raceId, randomWords);
     }
 }
