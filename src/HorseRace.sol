@@ -3,6 +3,7 @@
 pragma solidity >=0.8.2 <0.9.0;
 
 import './Shuffler.sol';
+import {console} from "forge-std/console.sol";
 
 contract HorseRace {
 
@@ -87,10 +88,12 @@ contract HorseRace {
         if (!betOwners[msg.sender][raceId]) {
             betOwners[msg.sender][raceId] = true;
         }
+
+        console.log("Bet placed on race %d, horse %d for %d wei", raceId, horseId, msg.value);
     }
 
     function createRace(uint256 horseCount) external returns (uint256) {
-        require(horseCount < 256, "Horse count is too high");
+        require(horseCount > 1 && horseCount < 256, "Can only play with 1 < horseCount < 256");
 
         Race storage race = races.push();
         race.horses = new uint256[](horseCount);
@@ -99,6 +102,7 @@ contract HorseRace {
 
         raceOwners[msg.sender][races.length - 1] = true;
 
+        console.log("Race %d created with %d horses", races.length - 1, horseCount);
         return races.length - 1;
     }
 
@@ -113,6 +117,7 @@ contract HorseRace {
 
         uint32 horseCount = uint32(race.horses.length);
 
+        console.log("Starting race %d", raceIndex);
         shuffler.shuffle(raceIndex, horseCount);
     }
 
