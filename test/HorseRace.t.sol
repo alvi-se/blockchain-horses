@@ -109,5 +109,11 @@ contract HorseRaceTest is Test {
         vm.expectRevert();
         shuffler.shuffle(1, 10);
     }
+
+    function test_Shuffle() public {
+        vm.prank(address(horseRace));
+        uint256 requestId = shuffler.shuffle(1, 10);
+        vrfMock.fulfillRandomWords(requestId, address(shuffler));
+    }
 }
 
