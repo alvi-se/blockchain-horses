@@ -2,16 +2,15 @@
 
 pragma solidity >=0.8.2 <0.9.0;
 
-import 'forge-std/Script.sol';
-import '../src/HorseRace.sol';
-import '../src/Shuffler.sol';
-import '@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol';
+import "forge-std/Script.sol";
+import "../src/HorseRace.sol";
+import "../src/Shuffler.sol";
+import "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 /*
 To fix overflow/underflow errors in the script, check here
 https://github.com/smartcontractkit/chainlink-brownie-contracts/issues/33
  */
-
 
 contract HorseRaceScript is Script {
     VRFCoordinatorV2_5Mock vrfMock;
@@ -34,9 +33,9 @@ contract HorseRaceScript is Script {
 
         vm.stopBroadcast();
 
-        console.log('VRF Subscription ID:', vrfSubscription);
-        console.log('VRF Coordinator Address:', address(vrfMock));
-        console.log('Shuffler Address:', address(shuffler));
-        console.log('HorseRace Address:', address(horseRace));
+        console.log("VRF Subscription ID:", vrfSubscription);
+        console.log("VRF Coordinator Address:", address(vrfMock));
+        console.log("Shuffler Address:", address(shuffler));
+        console.log("HorseRace Address:", address(horseRace));
     }
 }

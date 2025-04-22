@@ -2,25 +2,24 @@
 
 pragma solidity >=0.8.2 <0.9.0;
 
-import './Shuffler.sol';
+import "./Shuffler.sol";
 import {console} from "forge-std/console.sol";
 
 contract HorseRace {
-
     // ---------- Variables ----------
 
     address private owner;
     Race[] public races;
     Shuffler private shuffler;
-    uint constant private HOUSE_EDGE = 69;
+    uint256 private constant HOUSE_EDGE = 69;
 
     // Tells whether the address has a bet on raceId
     // This is needed to quickly check if the address has a bet on a race
-    mapping (address => mapping (uint256 => bool)) private betOwners;
+    mapping(address => mapping(uint256 => bool)) private betOwners;
     // Same as above but for race owners
-    mapping (address => mapping (uint256 => bool)) private raceOwners;
+    mapping(address => mapping(uint256 => bool)) private raceOwners;
 
-    mapping (address => uint256) private winnings;
+    mapping(address => uint256) private winnings;
 
     // ---------- Structs --------
 
@@ -29,7 +28,7 @@ contract HorseRace {
         // Map horseId to address, and address to amount
         // mapping (uint256 => mapping (address => uint256)) bets;
         // Bet[] bets;
-        mapping (uint256 => Bet[]) bets;
+        mapping(uint256 => Bet[]) bets;
         uint256 winningHorse;
         RaceStatus status;
         address creator;
@@ -46,7 +45,6 @@ contract HorseRace {
         uint256 horseId;
         uint256 amount;
     }
-    
 
     // ---------- Modifiers ----------
 
@@ -59,7 +57,6 @@ contract HorseRace {
         require(msg.sender == address(shuffler), "You are not the shuffler");
         _;
     }
-
 
     // ---------- Constructor ----------
 
@@ -78,12 +75,8 @@ contract HorseRace {
         require(race.status == RaceStatus.NOT_STARTED, "Can't bet on started race");
         require(horseId < race.horses.length, "Horse index out of range");
 
-        race.bets[horseId].push(Bet({
-            owner: msg.sender,
-            horseId: horseId,
-            amount: msg.value
-        }));
-        
+        race.bets[horseId].push(Bet({owner: msg.sender, horseId: horseId, amount: msg.value}));
+
         // race.bets[horseId][msg.sender] += msg.value;
         if (!betOwners[msg.sender][raceId]) {
             betOwners[msg.sender][raceId] = true;
@@ -118,7 +111,7 @@ contract HorseRace {
         uint32 horseCount = uint32(race.horses.length);
 
         console.log("Starting race %d", raceIndex);
-        shuffler.shuffle(raceIndex, horseCount);
+        shuffler.shuffle(raceIndex, horseCount, true);
     }
 
     function onRaceFinish(uint256 raceId, uint256[] calldata randomWords) external onlyShuffler {
@@ -147,7 +140,6 @@ contract HorseRace {
             winnings[b.owner] += winningsAmount;
         }
     }
-
 
     function withdraw() external {
         uint256 amount = winnings[msg.sender];

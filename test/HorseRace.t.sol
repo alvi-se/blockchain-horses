@@ -2,10 +2,10 @@
 
 pragma solidity >=0.8.2 <0.9.0;
 
-import {Test, console} from 'forge-std/Test.sol';
-import {HorseRace} from '../src/HorseRace.sol';
-import {Shuffler} from '../src/Shuffler.sol';
-import {VRFCoordinatorV2_5Mock} from '@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol';
+import {Test, console} from "forge-std/Test.sol";
+import {HorseRace} from "../src/HorseRace.sol";
+import {Shuffler} from "../src/Shuffler.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract HorseRaceTest is Test {
     VRFCoordinatorV2_5Mock vrfMock;
@@ -14,24 +14,21 @@ contract HorseRaceTest is Test {
     uint256 vrfSubscription;
 
     constructor() {
-        vm.startBroadcast();
-
-        vrfMock = new VRFCoordinatorV2_5Mock(100_000_000_000_000_000, 1000000000, 1000);
+        vrfMock = new VRFCoordinatorV2_5Mock(100_000_000_000_000_000, 1000000000, 10_000_000_000_000_000_000);
         vrfSubscription = vrfMock.createSubscription();
-        vrfMock.fundSubscription(vrfSubscription, 100000000000000000000); // 100 LINK
+        vrfMock.fundSubscription(vrfSubscription, 100_000_000_000_000_000_000); // 100 LINK
 
         shuffler = new Shuffler(address(vrfMock), vrfSubscription);
+        vm.deal(address(shuffler), 1_000_000_000); // 1 gwei
         vrfMock.addConsumer(vrfSubscription, address(shuffler));
 
-        horseRace = new HorseRace(address(shuffler));
+        horseRace = new HorseRace(payable(address(shuffler)));
         shuffler.setHorseRace(address(horseRace));
 
-        vm.stopBroadcast();
-
-        console.log('VRF Subscription ID:', vrfSubscription);
-        console.log('VRF Coordinator Address:', address(vrfMock));
-        console.log('Shuffler Address:', address(shuffler));
-        console.log('HorseRace Address:', address(horseRace));
+        console.log("VRF Subscription ID:", vrfSubscription);
+        console.log("VRF Coordinator Address:", address(vrfMock));
+        console.log("Shuffler Address:", address(shuffler));
+        console.log("HorseRace Address:", address(horseRace));
     }
 
     function test_CreateRaceWithOneHorse() public {
@@ -65,7 +62,6 @@ contract HorseRaceTest is Test {
     }
 
     function test_BetOnRaceWithInvalidRace() public {
-
         uint256 horse = 1;
         vm.expectRevert();
         horseRace.bet{value: 2000}(10000, horse);
@@ -107,13 +103,12 @@ contract HorseRaceTest is Test {
 
     function test_ShuffleWithoutPermission() public {
         vm.expectRevert();
-        shuffler.shuffle(1, 10);
+        shuffler.shuffle(1, 10, false);
     }
 
     function test_Shuffle() public {
         vm.prank(address(horseRace));
-        uint256 requestId = shuffler.shuffle(1, 10);
+        uint256 requestId = shuffler.shuffle(1, 10, false);
         vrfMock.fulfillRandomWords(requestId, address(shuffler));
     }
 }
-

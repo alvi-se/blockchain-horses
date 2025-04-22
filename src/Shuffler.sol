@@ -8,15 +8,13 @@ import {HorseRace} from "./HorseRace.sol";
 import {console} from "forge-std/console.sol";
 
 contract Shuffler is VRFConsumerBaseV2Plus {
-
     // ---------- Variables ----------
 
     uint256 s_subscriptionId;
     // Sepolia VRF Coordinator
     // address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
     address vrfCoordinator;
-    bytes32 s_keyHash =
-        0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+    bytes32 s_keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
     uint32 callbackGasLimit = 40000;
     uint16 requestConfirmations = 3;
     // uint32 numWords = 1;
@@ -37,14 +35,12 @@ contract Shuffler is VRFConsumerBaseV2Plus {
         s_subscriptionId = subscriptionId;
     }
 
-
     // ---------- Modifiers ----------
 
     modifier onlyHorseRace() {
         require(msg.sender == address(horseRace), "You are not the horse race contract");
         _;
     }
-
 
     // ---------- Events ----------
 
@@ -53,17 +49,12 @@ contract Shuffler is VRFConsumerBaseV2Plus {
 
     // ---------- Functions ----------
 
-
     function setHorseRace(address horseRaceAddress) external onlyOwner {
         horseRace = HorseRace(horseRaceAddress);
     }
 
-
-    function shuffle(
-        uint256 raceId,
-        uint32 horseCount
-    ) external onlyHorseRace returns (uint256) {
-        uint requestId = s_vrfCoordinator.requestRandomWords(
+    function shuffle(uint256 raceId, uint32 horseCount, bool nativePayment) external onlyHorseRace returns (uint256) {
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: s_keyHash,
                 subId: s_subscriptionId,
@@ -72,7 +63,7 @@ contract Shuffler is VRFConsumerBaseV2Plus {
                 numWords: horseCount,
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     // Pay with native token
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: true})
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: nativePayment})
                 )
             })
         );
