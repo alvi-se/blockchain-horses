@@ -24,12 +24,13 @@ contract HorseRace {
     // ---------- Structs --------
 
     struct Race {
-        uint256[] horses;
+        uint8[] horses;
         // Map horseId to address, and address to amount
         // mapping (uint256 => mapping (address => uint256)) bets;
         // Bet[] bets;
-        mapping(uint256 => Bet[]) bets;
-        uint256 winningHorse;
+        uint8 horseCount;
+        mapping(uint8 => Bet[]) bets;
+        uint8 winningHorse;
         RaceStatus status;
         address creator;
     }
@@ -65,15 +66,29 @@ contract HorseRace {
         shuffler = Shuffler(shufflerAddress);
     }
 
+
+    // ---------- Getters ----------
+
+    function getWinningHorse(uint256 raceId) external view returns (uint256) {
+        require(raceId < races.length, "Race does not exist");
+        require(races[raceId].status == RaceStatus.FINISHED, "Race has not finished yet");
+
+        return races[raceId].winningHorse;
+    }
+
     // ---------- Functions ----------
 
-    function bet(uint256 raceId, uint256 horseId) external payable {
-        require(msg.value > 1000 && msg.value < 1_000_000, "Only bets between 1000 and 1000000 wei are allowed");
+    function bet(uint256 raceId, uint8 horseId) external payable {
+        require(msg.value > 1000 gwei && msg.value < 1_000_000 gwei, "Only bets between 1000 and 1000000 gwei are allowed");
         require(raceId < races.length, "No such race exists");
+
+        // A player can only bet on a single horse only once
+        require(!betOwners[msg.sender][raceId], "You already have a bet on this race");
+
         Race storage race = races[raceId];
 
         require(race.status == RaceStatus.NOT_STARTED, "Can't bet on started race");
-        require(horseId < race.horses.length, "Horse index out of range");
+        require(horseId < race.horseCount, "Horse index out of range");
 
         race.bets[horseId].push(Bet({owner: msg.sender, horseId: horseId, amount: msg.value}));
 
@@ -85,13 +100,13 @@ contract HorseRace {
         console.log("Bet placed on race %d, horse %d for %d wei", raceId, horseId, msg.value);
     }
 
-    function createRace(uint256 horseCount) external returns (uint256) {
+    function createRace(uint8 horseCount) external returns (uint256) {
         require(horseCount > 1 && horseCount < 256, "Can only play with 1 < horseCount < 256");
 
         Race storage race = races.push();
-        race.horses = new uint256[](horseCount);
         race.creator = msg.sender;
         race.status = RaceStatus.NOT_STARTED;
+        race.horseCount = horseCount;
 
         raceOwners[msg.sender][races.length - 1] = true;
 
@@ -99,7 +114,7 @@ contract HorseRace {
         return races.length - 1;
     }
 
-    function startRace(uint256 raceIndex) external {
+    function startRace(uint256 raceIndex) external returns (uint256) {
         require(raceIndex < races.length, "Race does not exist");
 
         Race storage race = races[raceIndex];
@@ -108,37 +123,61 @@ contract HorseRace {
 
         race.status = RaceStatus.IN_PROGRESS;
 
-        uint32 horseCount = uint32(race.horses.length);
+        uint32 horseCount = uint32(race.horseCount);
 
         console.log("Starting race %d", raceIndex);
-        shuffler.shuffle(raceIndex, horseCount, true);
+        return shuffler.generateHorsePositions(raceIndex, horseCount, false);
     }
 
     function onRaceFinish(uint256 raceId, uint256[] calldata randomWords) external onlyShuffler {
+        require(races[raceId].status == RaceStatus.IN_PROGRESS, "Race is not in progress");
+
         Race storage race = races[raceId];
         race.status = RaceStatus.FINISHED;
-        race.horses = randomWords;
 
-        uint256 min = type(uint256).max;
+        uint8[] memory shuffledPositions = shuffle(randomWords);
 
-        for (uint256 i = 0; i < randomWords.length; i++) {
-            if (randomWords[i] < min) {
+        uint8 min = type(uint8).max;
+
+        for (uint8 i = 0; i < shuffledPositions.length; ++i) {
+            if (shuffledPositions[i] < min) {
                 min = i;
             }
         }
+
+        // This costs too much
+        race.horses = shuffledPositions;
         race.winningHorse = min;
+
 
         Bet[] storage winningBets = race.bets[min];
 
-        for (uint256 i = 0; i < winningBets.length; i++) {
+        for (uint256 i = 0; i < winningBets.length; ++i) {
             Bet storage b = winningBets[i];
             uint256 amount = b.amount;
             // 1 / winningBets.length probability of winning
-            amount = amount * race.horses.length;
-            // TODO check if the computation is correct, Copilot wrote it
+            amount = amount * race.horseCount;
             uint256 winningsAmount = (amount * (1000 - HOUSE_EDGE)) / 1000;
             winnings[b.owner] += winningsAmount;
         }
+    }
+
+    function shuffle(uint256[] memory positions) private pure returns (uint8[] memory) {
+        // TODO check if it shuffles correctly
+
+        uint256 count = positions.length;
+        uint8[] memory array = new uint8[](count);
+
+        for (uint8 i = 0; i < count; ++i) {
+            array[i] = i;
+        }
+
+        for (uint8 i = 0; i < count; ++i) {
+            uint8 pos = uint8(positions[i] % (count - i));
+            (array[i], array[pos]) = (array[pos], array[i]);
+        }
+
+        return array;
     }
 
     function withdraw() external {

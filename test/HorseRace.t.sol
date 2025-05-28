@@ -32,59 +32,53 @@ contract HorseRaceTest is Test {
     }
 
     function test_CreateRaceWithOneHorse() public {
-        uint256 horses = 1;
+        uint8 horses = 1;
         vm.expectRevert();
         horseRace.createRace(horses);
     }
 
     function test_CreateRace() public {
-        uint256 horses = 5;
+        uint8 horses = 5;
         horseRace.createRace(horses);
-    }
-
-    function test_CreateRaceWithTooManyHorses() public {
-        uint256 tooManyHorses = 256;
-        vm.expectRevert();
-        horseRace.createRace(tooManyHorses);
     }
 
     function test_BetOnRace() public {
         uint256 race = horseRace.createRace(5);
-        uint256 horse = 1;
-        horseRace.bet{value: 2000}(race, horse);
+        uint8 horse = 1;
+        horseRace.bet{value: 2000 gwei}(race, horse);
     }
 
     function test_BetOnRaceWithInvalidHorse() public {
         uint256 race = horseRace.createRace(5);
-        uint256 horse = 5;
+        uint8 horse = 5;
         vm.expectRevert();
-        horseRace.bet{value: 2000}(race, horse);
+        horseRace.bet{value: 2000 gwei}(race, horse);
     }
 
     function test_BetOnRaceWithInvalidRace() public {
-        uint256 horse = 1;
+        uint8 horse = 1;
         vm.expectRevert();
-        horseRace.bet{value: 2000}(10000, horse);
+        horseRace.bet{value: 2000 gwei}(10000, horse);
     }
 
     function test_BetOnRaceWithSmallValue() public {
         uint256 race = horseRace.createRace(5);
-        uint256 horse = 1;
+        uint8 horse = 1;
         vm.expectRevert();
-        horseRace.bet{value: 999}(race, horse);
+        horseRace.bet{value: 999 gwei}(race, horse);
     }
 
     function test_BetOnRaceWithBigValue() public {
         uint256 race = horseRace.createRace(5);
-        uint256 horse = 1;
+        uint8 horse = 1;
         vm.expectRevert();
-        horseRace.bet{value: 1_000_000}(race, horse);
+        horseRace.bet{value: 1_000_000 gwei}(race, horse);
     }
 
     function test_StartRace() public {
         uint256 race = horseRace.createRace(5);
-        uint256 horse = 1;
-        horseRace.bet{value: 2000}(race, horse);
+        uint8 horse = 1;
+        horseRace.bet{value: 2000 gwei}(race, horse);
         horseRace.startRace(race);
     }
 
@@ -103,12 +97,28 @@ contract HorseRaceTest is Test {
 
     function test_ShuffleWithoutPermission() public {
         vm.expectRevert();
-        shuffler.shuffle(1, 10, false);
+        shuffler.generateHorsePositions(1, 10, false);
     }
 
     function test_Shuffle() public {
         vm.prank(address(horseRace));
-        uint256 requestId = shuffler.shuffle(1, 10, false);
+        uint256 requestId = shuffler.generateHorsePositions(1, 10, false);
         vrfMock.fulfillRandomWords(requestId, address(shuffler));
+    }
+
+    function test_FinishRace() public {
+        uint256 race = horseRace.createRace(5);
+        uint8 horse = 1;
+        horseRace.bet{value: 2000 gwei}(race, horse);
+        uint256 requestId = horseRace.startRace(race);
+        
+        vrfMock.fulfillRandomWords(requestId, address(shuffler));
+
+        console.log(horseRace.getWinningHorse(race));
+
+    }
+
+    function test_Withdraw() public {
+        
     }
 }

@@ -21,7 +21,7 @@ contract HorseRaceScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        vrfMock = new VRFCoordinatorV2_5Mock(100_000_000_000_000_000, 1000000000, 1000);
+        vrfMock = new VRFCoordinatorV2_5Mock(100_000_000_000_000_000, 1000000000, 10_000_000_000_000_000_000);
         vrfSubscription = vrfMock.createSubscription();
         vrfMock.fundSubscription(vrfSubscription, 100000000000000000000); // 100 LINK
 

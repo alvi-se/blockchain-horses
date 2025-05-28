@@ -53,7 +53,7 @@ contract Shuffler is VRFConsumerBaseV2Plus {
         horseRace = HorseRace(horseRaceAddress);
     }
 
-    function shuffle(uint256 raceId, uint32 horseCount, bool nativePayment) external onlyHorseRace returns (uint256) {
+    function generateHorsePositions(uint256 raceId, uint32 horseCount, bool nativePayment) external onlyHorseRace returns (uint256) {
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: s_keyHash,
