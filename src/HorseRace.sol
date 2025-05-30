@@ -9,7 +9,7 @@ contract HorseRace {
     // ---------- Variables ----------
 
     address private owner;
-    Race[] public races;
+    Race[] private races;
     Shuffler private shuffler;
     uint256 private constant HOUSE_EDGE = 69;
 
@@ -74,6 +74,10 @@ contract HorseRace {
         require(races[raceId].status == RaceStatus.FINISHED, "Race has not finished yet");
 
         return races[raceId].winningHorse;
+    }
+
+    function getBets(uint256 raceId, uint8 horseId) external view returns (Bet[] memory) {
+        return races[raceId].bets[horseId];
     }
 
     // ---------- Functions ----------
@@ -145,7 +149,6 @@ contract HorseRace {
             }
         }
 
-        // This costs too much
         race.horses = shuffledPositions;
         race.winningHorse = min;
 
@@ -163,17 +166,18 @@ contract HorseRace {
     }
 
     function shuffle(uint256[] memory positions) private pure returns (uint8[] memory) {
-        // TODO check if it shuffles correctly
-
-        uint256 count = positions.length;
+        // We are sure that we have at most 256 horses, so we can use uint8
+        uint8 count = uint8(positions.length);
         uint8[] memory array = new uint8[](count);
 
+        // Initialize the array with horses IDs
         for (uint8 i = 0; i < count; ++i) {
             array[i] = i;
         }
 
-        for (uint8 i = 0; i < count; ++i) {
-            uint8 pos = uint8(positions[i] % (count - i));
+        // Fisher-Yates shuffle 
+        for (uint8 i = count - 1; i > 0; --i) {
+            uint8 pos = uint8(positions[i] % (i + 1));
             (array[i], array[pos]) = (array[pos], array[i]);
         }
 
