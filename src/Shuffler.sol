@@ -15,7 +15,7 @@ contract Shuffler is VRFConsumerBaseV2Plus {
     // address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
     address vrfCoordinator;
     bytes32 s_keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
-    uint32 callbackGasLimit = 40000;
+    uint32 callbackGasLimit = 1_000_000;
     uint16 requestConfirmations = 3;
     // uint32 numWords = 1;
 
