@@ -19,11 +19,12 @@ contract HorseRaceTest is Test {
         vrfMock.fundSubscription(vrfSubscription, 100_000_000_000_000_000_000); // 100 LINK
 
         shuffler = new Shuffler(address(vrfMock), vrfSubscription);
-        vm.deal(address(shuffler), 1_000_000_000); // 1 gwei
+        vm.deal(address(shuffler), 1 ether);
         vrfMock.addConsumer(vrfSubscription, address(shuffler));
 
         horseRace = new HorseRace(payable(address(shuffler)));
         shuffler.setHorseRace(address(horseRace));
+        vm.deal(address(horseRace), 1 ether);
 
         console.log("VRF Subscription ID:", vrfSubscription);
         console.log("VRF Coordinator Address:", address(vrfMock));
@@ -118,7 +119,44 @@ contract HorseRaceTest is Test {
 
     }
 
-    function test_Withdraw() public {
+    function test_WinRace() public {
+        uint256 raceId = horseRace.createRace(5);
+        uint8 horse = 0;
+        horseRace.bet{value: 2000 gwei}(raceId, horse);
+        horseRace.startRace(raceId);
         
+        vm.prank(address(shuffler));
+        uint256[] memory positions = new uint256[](5);
+        // We make horse 0 win
+        positions[0] = 4;
+        positions[1] = 3;
+        positions[2] = 2;
+        positions[3] = 1;
+        positions[4] = 0;
+        horseRace.onRaceFinish(raceId, positions);
+
+        assertEq(horseRace.getWinningHorse(raceId), horse, "Winning horse should be 0");
+    }
+
+    function test_Withdraw() public {
+        uint256 raceId = horseRace.createRace(5);
+        uint8 horse = 0;
+        horseRace.bet{value: 2000 gwei}(raceId, horse);
+        horseRace.startRace(raceId);
+        
+        vm.startPrank(address(shuffler));
+        uint256[] memory positions = new uint256[](5);
+        // We make horse 0 win
+        positions[0] = 4;
+        positions[1] = 3;
+        positions[2] = 2;
+        positions[3] = 1;
+        positions[4] = 0;
+        horseRace.onRaceFinish(raceId, positions);
+
+        assertEq(horseRace.getWinningHorse(raceId), horse, "Winning horse should be 0");
+        
+        vm.stopPrank();
+        horseRace.withdraw();
     }
 }
