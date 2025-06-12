@@ -32,6 +32,10 @@ contract HorseRaceTest is Test {
         console.log("HorseRace Address:", address(horseRace));
     }
 
+    receive() external payable {
+        console.log("Received", msg.value, "wei");
+    }
+
     function test_CreateRaceWithOneHorse() public {
         uint8 horses = 1;
         vm.expectRevert();
@@ -74,6 +78,16 @@ contract HorseRaceTest is Test {
         uint8 horse = 1;
         vm.expectRevert();
         horseRace.bet{value: 1_000_000 gwei}(race, horse);
+    }
+
+    function test_BetOnRaceTwice() public {
+        uint256 race = horseRace.createRace(5);
+        uint8 horse1 = 1;
+        uint8 horse2 = 2;
+        horseRace.bet{value: 2000 gwei}(race, horse1);
+
+        vm.expectRevert();
+        horseRace.bet{value: 200}(race, horse2);
     }
 
     function test_StartRace() public {
@@ -155,8 +169,12 @@ contract HorseRaceTest is Test {
         horseRace.onRaceFinish(raceId, positions);
 
         assertEq(horseRace.getWinningHorse(raceId), horse, "Winning horse should be 0");
-        
+
         vm.stopPrank();
+
+        // I should win 9310 gwei
+        // 2000 * 5 (probability to win) * 931/1000 (house edge)
+        assertEq(horseRace.getWinnings(), 9310 gwei, "Winnings should be 9310 gwei");
         horseRace.withdraw();
     }
 }
