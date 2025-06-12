@@ -6,6 +6,9 @@ import "./Shuffler.sol";
 import {console} from "forge-std/console.sol";
 
 contract HorseRace {
+    // ---------- Events ----------
+    event RaceFinished(uint256 indexed raceId, uint8[] horses);
+
     // ---------- Variables ----------
 
     address private owner;
@@ -24,10 +27,6 @@ contract HorseRace {
     // ---------- Structs --------
 
     struct Race {
-        uint8[] horses;
-        // Map horseId to address, and address to amount
-        // mapping (uint256 => mapping (address => uint256)) bets;
-        // Bet[] bets;
         uint8 horseCount;
         mapping(uint8 => Bet[]) bets;
         uint8 winningHorse;
@@ -149,7 +148,6 @@ contract HorseRace {
             }
         }
 
-        race.horses = shuffledPositions;
         race.winningHorse = min;
 
 
@@ -163,6 +161,8 @@ contract HorseRace {
             uint256 winningsAmount = (amount * (1000 - HOUSE_EDGE)) / 1000;
             winnings[b.owner] += winningsAmount;
         }
+
+        emit RaceFinished(raceId, shuffledPositions);
     }
 
     function shuffle(uint256[] memory positions) private pure returns (uint8[] memory) {
@@ -182,6 +182,10 @@ contract HorseRace {
         }
 
         return array;
+    }
+
+    function getWinnings() external view returns (uint256) {
+        return winnings[msg.sender];
     }
 
     function withdraw() external {
