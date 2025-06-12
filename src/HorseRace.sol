@@ -65,7 +65,6 @@ contract HorseRace {
         shuffler = Shuffler(shufflerAddress);
     }
 
-
     // ---------- Getters ----------
 
     function getWinningHorse(uint256 raceId) external view returns (uint256) {
@@ -82,7 +81,9 @@ contract HorseRace {
     // ---------- Functions ----------
 
     function bet(uint256 raceId, uint8 horseId) external payable {
-        require(msg.value > 1000 gwei && msg.value < 1_000_000 gwei, "Only bets between 1000 and 1000000 gwei are allowed");
+        require(
+            msg.value > 1000 gwei && msg.value < 1_000_000 gwei, "Only bets between 1000 and 1000000 gwei are allowed"
+        );
         require(raceId < races.length, "No such race exists");
 
         // A player can only bet on a single horse only once
@@ -150,7 +151,6 @@ contract HorseRace {
 
         race.winningHorse = min;
 
-
         Bet[] storage winningBets = race.bets[min];
 
         for (uint256 i = 0; i < winningBets.length; ++i) {
@@ -175,7 +175,7 @@ contract HorseRace {
             array[i] = i;
         }
 
-        // Fisher-Yates shuffle 
+        // Fisher-Yates shuffle
         for (uint8 i = count - 1; i > 0; --i) {
             uint8 pos = uint8(positions[i] % (i + 1));
             (array[i], array[pos]) = (array[pos], array[i]);

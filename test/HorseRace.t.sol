@@ -126,11 +126,10 @@ contract HorseRaceTest is Test {
         uint8 horse = 1;
         horseRace.bet{value: 2000 gwei}(race, horse);
         uint256 requestId = horseRace.startRace(race);
-        
+
         vrfMock.fulfillRandomWords(requestId, address(shuffler));
 
         console.log(horseRace.getWinningHorse(race));
-
     }
 
     function test_WinRace() public {
@@ -138,7 +137,7 @@ contract HorseRaceTest is Test {
         uint8 horse = 0;
         horseRace.bet{value: 2000 gwei}(raceId, horse);
         horseRace.startRace(raceId);
-        
+
         vm.prank(address(shuffler));
         uint256[] memory positions = new uint256[](5);
         // We make horse 0 win
@@ -157,7 +156,7 @@ contract HorseRaceTest is Test {
         uint8 horse = 0;
         horseRace.bet{value: 2000 gwei}(raceId, horse);
         horseRace.startRace(raceId);
-        
+
         vm.startPrank(address(shuffler));
         uint256[] memory positions = new uint256[](5);
         // We make horse 0 win
